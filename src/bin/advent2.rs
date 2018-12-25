@@ -1,5 +1,4 @@
 use advent2018::DataReader;
-use std::hash::{Hash, Hasher};
 use std::fmt;
 use fnv::FnvHashSet;
 
@@ -19,14 +18,19 @@ fn main() {
 }
 
 fn find_matching_partial<'a>(ids: &'a [BoxID]) -> Option<PartialBoxID<'a>> {
-    let mut seen = FnvHashSet::default();
-    for boxid in ids {
-        for partial in boxid.partial() {
+    let mut seen = FnvHashSet::with_capacity_and_hasher(ids.len(), Default::default());
+    let len = match ids.get(0) {
+        Some(id) => id.len(),
+        None => return None,
+    };
+    for i in 0..len {
+        for boxid in ids {
+            let partial = boxid.partial(i);
             if !seen.insert(partial) {
-                // We have already seen this partial.
                 return Some(partial);
             }
         }
+        seen.clear();
     }
     None
 }
@@ -40,6 +44,9 @@ impl BoxID {
         BoxID {
             id: id.into(),
         }
+    }
+    pub fn len(&self) -> usize {
+        self.id.len()
     }
     /// Count how many times every character occurs.
     fn count_characters(&self) -> [usize; 256] {
@@ -61,14 +68,8 @@ impl BoxID {
         }
         res
     }
-    pub fn partial<'a>(&'a self) -> impl Iterator<Item = PartialBoxID<'a>> {
-        let slice = &self.id[..];
-        (0..self.id.len()).map(move |index| {
-            PartialBoxID {
-                id: slice,
-                hidden: index,
-            }
-        })
+    pub fn partial<'a>(&'a self, i: usize) -> PartialBoxID<'a> {
+        PartialBoxID::new(self, i)
     }
 }
 
@@ -105,47 +106,25 @@ impl ChecksumValue {
 ///
 /// If two PartialBoxIDs are equal, their BoxIDs either differ by one character,
 /// or are equal.
-#[derive(Eq,Clone,Copy)]
+#[derive(Hash,PartialEq,Eq,Clone,Copy)]
 pub struct PartialBoxID<'a> {
-    id: &'a [u8],
-    hidden: usize,
+    start: &'a [u8],
+    end: &'a [u8],
 }
 impl<'a> PartialBoxID<'a> {
-    pub fn bytes(&self) -> impl Iterator<Item = u8> + 'a {
-        let (first, last) = self.id.split_at(self.hidden);
-        let first = first.iter().cloned();
-        let middle = std::iter::once(0u8);
-        let last = last.iter().skip(1).cloned();
-        first.chain(middle).chain(last)
-    }
-    pub fn len(&self) -> usize {
-        self.id.len()
-    }
-}
-impl<'a, 'b> PartialEq<PartialBoxID<'b>> for PartialBoxID<'a> {
-    fn eq(&self, other: &PartialBoxID<'b>) -> bool {
-        if self.len() == other.len() {
-            self.bytes().eq(other.bytes())
-        } else {
-            false
-        }
-    }
-}
-/// Our hash implementation must ensure that partial id's have the same hash if they are
-/// equal, so the hidden index must be ignored.
-impl<'a> Hash for PartialBoxID<'a> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        for byte in self.bytes() {
-            byte.hash(state);
+    pub fn new(id: &'a BoxID, i: usize) -> Self {
+        let (first, last) = id.id.split_at(i);
+        let last = &last[1..];
+        PartialBoxID {
+            start: first,
+            end: last,
         }
     }
 }
 impl<'a> fmt::Display for PartialBoxID<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use std::str::from_utf8;
-        let (first, last) = self.id.split_at(self.hidden);
-        let last = &last[1..];
-        from_utf8(first).unwrap().fmt(f)?;
-        from_utf8(last).unwrap().fmt(f)
+        from_utf8(self.start).unwrap().fmt(f)?;
+        from_utf8(self.end).unwrap().fmt(f)
     }
 }
