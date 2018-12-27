@@ -16,6 +16,11 @@ impl DataReader {
             lines: f.lines(),
         }
     }
+    pub fn text_io(self) -> TextIOLines {
+        TextIOLines {
+            lines: self.lines,
+        }
+    }
 }
 
 impl Iterator for DataReader {
@@ -25,4 +30,14 @@ impl Iterator for DataReader {
     }
 }
 
-
+pub type TextIOLine = std::vec::IntoIter<u8>;
+pub struct TextIOLines {
+    lines: Lines<BufReader<File>>,
+}
+impl Iterator for TextIOLines {
+    type Item = TextIOLine;
+    fn next(&mut self) -> Option<TextIOLine> {
+        self.lines.next().map(|res| res.expect("IO error while reading string."))
+            .map(|string| string.into_bytes().into_iter())
+    }
+}
