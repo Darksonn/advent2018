@@ -4,18 +4,21 @@ use fnv::FnvHashSet;
 fn main() {
     let input = DataReader::open(1);
 
-    let mut numbers: Vec<i64> = Vec::new();
-    for line in input {
-        numbers.push(line.parse().unwrap());
-    }
+    let numbers = advent2018::time("Read input", || {
+        let mut numbers: Vec<i64> = Vec::new();
+        for line in input {
+            numbers.push(line.parse().unwrap());
+        }
+        numbers
+    });
 
     let sum: i64 = advent2018::time("Sum", || {
         numbers.iter().cloned().sum()
     });
-    println!("Part one: {}", sum);
     let first_dup = advent2018::time("First duplicate", || {
         first_duplicate(&numbers[..])
     });
+    println!("Part one: {}", sum);
     println!("Part two: {}", first_dup);
 }
 

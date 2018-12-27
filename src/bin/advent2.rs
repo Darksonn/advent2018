@@ -5,19 +5,22 @@ use fnv::FnvHashSet;
 fn main() {
     let input = DataReader::open(2);
 
-    let mut ids = Vec::new();
-    for line in input {
-        ids.push(BoxID::new(line));
-    }
+    let ids = advent2018::time("Read input", || {
+        let mut ids = Vec::new();
+        for line in input {
+            ids.push(BoxID::new(line));
+        }
+        ids
+    });
 
     let checksum = advent2018::time("Checksum", || {
         ChecksumValue::checksum(ids.iter().map(|id| id.checksum()))
     });
-    println!("Part one: {}", checksum);
 
     let partial = advent2018::time("Matching ids", || {
         find_matching_partial(&ids).expect("No BoxIDs differ by one")
     });
+    println!("Part one: {}", checksum);
     println!("Part two: {}", partial);
 }
 

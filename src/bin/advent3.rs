@@ -6,19 +6,22 @@ use prefix_sum::sum2d::{PrefixSum2D, Rect, Buf2D};
 fn main() {
     let input = DataReader::open(3);
 
-    let mut claims = Vec::new();
-    for line in input.text_io() {
-        claims.push(Claim::new(line));
-    }
+    let claims = advent2018::time("Read input", move || {
+        let mut claims = Vec::new();
+        for line in input.text_io() {
+            claims.push(Claim::new(line));
+        }
+        claims
+    });
 
     let (overlaps, counts) = advent2018::time("Count overlaps", || {
         count_overlap_at_least_two(&claims)
     });
-    println!("Part one: {}", overlaps);
 
     let lonely = advent2018::time("Find lonely", || {
         find_lonely_claim(&counts, &claims)
     });
+    println!("Part one: {}", overlaps);
     println!("Part two: {}", lonely);
 }
 
