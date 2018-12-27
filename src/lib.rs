@@ -1,5 +1,17 @@
 use std::io::{BufRead, BufReader, Lines};
 use std::fs::File;
+use std::time::Instant;
+
+#[inline]
+pub fn time<F, Out>(label: &str, f: F) -> Out
+where
+    F: FnOnce() -> Out,
+{
+    let before = Instant::now();
+    let res = f();
+    println!("{}: {:?}", label, before.elapsed());
+    res
+}
 
 pub struct DataReader {
     lines: Lines<BufReader<File>>,

@@ -11,10 +11,14 @@ fn main() {
         claims.push(Claim::new(line));
     }
 
-    let (overlaps, counts) = count_overlap_at_least_two(&claims);
+    let (overlaps, counts) = advent2018::time("Count overlaps", || {
+        count_overlap_at_least_two(&claims)
+    });
     println!("Part one: {}", overlaps);
 
-    let lonely = find_lonely_claim(&counts, &claims);
+    let lonely = advent2018::time("Find lonely", || {
+        find_lonely_claim(&counts, &claims)
+    });
     println!("Part two: {}", lonely);
 }
 

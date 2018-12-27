@@ -10,10 +10,14 @@ fn main() {
         ids.push(BoxID::new(line));
     }
 
-    let checksum = ChecksumValue::checksum(ids.iter().map(|id| id.checksum()));
+    let checksum = advent2018::time("Checksum", || {
+        ChecksumValue::checksum(ids.iter().map(|id| id.checksum()))
+    });
     println!("Part one: {}", checksum);
 
-    let partial = find_matching_partial(&ids).expect("No BoxIDs differ by one");
+    let partial = advent2018::time("Matching ids", || {
+        find_matching_partial(&ids).expect("No BoxIDs differ by one")
+    });
     println!("Part two: {}", partial);
 }
 

@@ -9,9 +9,14 @@ fn main() {
         numbers.push(line.parse().unwrap());
     }
 
-    let sum: i64 = numbers.iter().cloned().sum();
+    let sum: i64 = advent2018::time("Sum", || {
+        numbers.iter().cloned().sum()
+    });
     println!("Part one: {}", sum);
-    println!("Part two: {}", first_duplicate(&numbers[..]));
+    let first_dup = advent2018::time("First duplicate", || {
+        first_duplicate(&numbers[..])
+    });
+    println!("Part two: {}", first_dup);
 }
 
 fn first_duplicate(numbers: &[i64]) -> i64 {
